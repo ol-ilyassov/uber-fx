@@ -2,7 +2,10 @@ package main
 
 import (
 	// std
+	"context"
+	"log/slog"
 	"net/http"
+	"os"
 
 	// local
 	"uber-fx/internal/app"
@@ -13,7 +16,9 @@ import (
 )
 
 func main() {
-	fx.New(
+	err := fx.New(
+		fx.NopLogger,
+
 		// fx.WithLogger(func(log *zap.Logger) fxevent.Logger {
 		// 	return &fxevent.ZapLogger{Logger: log}
 		// }), // replace fx logger.
@@ -34,5 +39,10 @@ func main() {
 			app.AsRoute(app.NewHelloHandler),
 		),
 		fx.Invoke(func(*http.Server) {}), // * to request that the HTTP server is always instantiated, even if none of the other components in the application reference it directly.
-	).Run() // starts the application.
+	).Start(context.Background()) // starts the application.
+	if err != nil {
+		slog.Error("fx.Start", "error", err)
+		os.Exit(1)
+	}
+
 }

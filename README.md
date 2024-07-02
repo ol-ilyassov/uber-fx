@@ -25,3 +25,5 @@ go get go.uber.org/fx@latest
 Repository: [uber-go/fx](https://github.com/uber-go/fx)
 
 Documentation: [uber-go/fx](https://uber-go.github.io/fx/)
+
+Godog: [uber-go/fx](https://pkg.go.dev/go.uber.org/fx)
