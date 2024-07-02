@@ -2,6 +2,7 @@ package main
 
 import (
 	// std
+
 	"context"
 	"log/slog"
 	"net/http"
@@ -16,7 +17,7 @@ import (
 )
 
 func main() {
-	err := fx.New(
+	fxApp := fx.New(
 		fx.NopLogger,
 
 		// fx.WithLogger(func(log *zap.Logger) fxevent.Logger {
@@ -39,10 +40,22 @@ func main() {
 			app.AsRoute(app.NewHelloHandler),
 		),
 		fx.Invoke(func(*http.Server) {}), // * to request that the HTTP server is always instantiated, even if none of the other components in the application reference it directly.
-	).Start(context.Background()) // starts the application.
+	)
+
+	// fxApp.Run()
+
+	var err error
+	err = fxApp.Start(context.Background())
 	if err != nil {
 		slog.Error("fx.Start", "error", err)
 		os.Exit(1)
 	}
 
+	app.ShutdownListener()
+
+	err = fxApp.Stop(context.Background())
+	if err != nil {
+		slog.Error("fx.Stop", "error", err)
+		os.Exit(1)
+	}
 }

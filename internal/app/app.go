@@ -4,6 +4,9 @@ import (
 	"context"
 	"net"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -36,10 +39,7 @@ func start(
 
 		log.Info("Starting HTTP server", zap.String("addr", srv.Addr))
 		go func() {
-			err := srv.Serve(ln)
-			if err != nil {
-				log.Error("Failed to start HTTP server", zap.Error(err))
-			}
+			_ = srv.Serve(ln)
 		}()
 
 		return nil
@@ -54,4 +54,12 @@ func stop(
 		log.Info("Shutting down HTTP server")
 		return srv.Shutdown(ctx)
 	}
+}
+
+func ShutdownListener() {
+	signalCtx, signalCtxCancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer signalCtxCancel()
+
+	// wait signal
+	<-signalCtx.Done()
 }
