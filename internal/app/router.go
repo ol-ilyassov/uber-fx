@@ -1,6 +1,10 @@
 package app
 
-import "net/http"
+import (
+	"net/http"
+
+	"go.uber.org/fx"
+)
 
 // * Decoupling:
 // Route is an http.handler that knows the mux pattern
@@ -12,10 +16,19 @@ type Route interface {
 	Pattern() string
 }
 
-func NewServeMux(route1, route2 Route) *http.ServeMux {
+func NewServeMux(routes []Route) *http.ServeMux {
 	mux := http.NewServeMux()
-	mux.Handle(route1.Pattern(), route1)
-	mux.Handle(route2.Pattern(), route2)
+	for _, route := range routes {
+		mux.Handle(route.Pattern(), route)
+	}
 
 	return mux
+}
+
+func AsRoute(f any) any {
+	return fx.Annotate(
+		f,
+		fx.As(new(Route)),
+		fx.ResultTags(`group:"routes"`),
+	)
 }

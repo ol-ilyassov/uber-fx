@@ -27,29 +27,12 @@ func main() {
 
 			fx.Annotate(
 				app.NewServeMux,
-				fx.ParamTags(`name:"echo"`, `name:"hello"`),
+				fx.ParamTags(`group:"routes"`),
 			), // add router.
 
-			fx.Annotate(
-				app.NewEchoHandler,
-				fx.As(new(app.Route)), // declare explicit interface apply.
-				fx.ResultTags(`name:"echo"`),
-			), // add handler.
-
-			fx.Annotate(
-				app.NewHelloHandler,
-				fx.As(new(app.Route)), // the same interface.
-				fx.ResultTags(`name:"hello"`),
-			), // add another handler.
+			app.AsRoute(app.NewEchoHandler),
+			app.AsRoute(app.NewHelloHandler),
 		),
 		fx.Invoke(func(*http.Server) {}), // * to request that the HTTP server is always instantiated, even if none of the other components in the application reference it directly.
 	).Run() // starts the application.
 }
-
-// ? Case:
-// 2 instances with of the same type are given,
-// and there is no way to differentiate them.
-// Example: NewEchoHandler and NewHelloHandler
-// are both of type Route interface.
-// ! => Error
-// * => Solution: fx.ResultTags() use.
